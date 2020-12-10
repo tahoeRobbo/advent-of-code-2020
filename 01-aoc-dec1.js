@@ -341,3 +341,4 @@ let answer = solveBrute(expenseReportList);
 
 console.log('answer:', answer)
 
+exports = {}
