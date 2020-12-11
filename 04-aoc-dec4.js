@@ -50,26 +50,7 @@ Count the number of valid passports - those that have all required fields. Treat
 
 const batch = getBatch().split('\n\n');
 
-const testData = (
-  `ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
-byr:1937 iyr:2017 cid:147 hgt:183cm
-
-iyr:2013 ecl:amb cid:350 eyr:2023 pid:028048884
-hcl:#cfa07d byr:1929
-
-hcl:#ae17e1 iyr:2013
-eyr:2024
-ecl:brn pid:760753108 byr:1931
-hgt:179cm
-
-hcl:#cfa07d eyr:2025 pid:166559648
-iyr:2011 ecl:brn hgt:59in`
-).split('\n\n')
-// .replace(/\s/g, 'ZZZ')
-
-
- // console.log('batch', batch)
-
+// 233
 const solvePart1 = (passports) => {
   let requiredFields = [
     'byr',
@@ -157,22 +138,23 @@ iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719
 
 Count the number of valid passports - those that have all required fields and valid values. Continue to treat cid as optional. In your batch file, how many passports are valid?*/
 
+// 111
 const solvePart2 = (passports) => {
   let requiredFields = [
     {
-      field: 'byr',
+      name: 'byr',
       validation: (year) => year >= 1920 && year <= 2002
     },
     {
-      field: 'iyr',
+      name: 'iyr',
       validation: (year) => year >= 2010 && year <= 2020
     },
     {
-      field: 'eyr',
+      name: 'eyr',
       validation: (year) => year >= 2020 && year <= 2030
     },
     {
-      field: 'hgt',
+      name: 'hgt',
       validation: (height) =>{
         let heightNumber
         if (height.includes('cm')) {
@@ -186,45 +168,40 @@ const solvePart2 = (passports) => {
       }
     },
     {
-      field: 'hcl',
+      name: 'hcl',
       validation: (color) => /^#[0-9a-f]{6}$/i.test(color)
     },
     {
-      field: 'ecl',
+      name: 'ecl',
       validation: (color) => ['amb', 'blu', 'brn', 'gry', 'grn', 'hzl', 'oth'].indexOf(color) !== -1
     },
     {
-      field: 'pid',
+      name: 'pid',
       validation: (id) => id.length === 9 && typeof +id === 'number'
     }
   ]
   const filteredPassports = passports.filter((passport) => {
     return requiredFields.every(requirement => {
-      return passport.includes(requirement.field)
+      return passport.includes(requirement.name)
     })
   })
 
   const validatedPassports = filteredPassports.filter((passport) => {
     const passportFields = passport.replace(/\s/g, ':').split(':');
-    // console.log('passportFields', passportFields)
 
-   return requiredFields.every((field) => {
-      let index = passportFields.indexOf(field.field)
-      console.log('field.field', field.field)
-      console.log('passportFields, index', passportFields, index)
-      console.log('passportFields[index + 1]', passportFields[index + 1])
-
-      console.log('field.validation(passportFields[index + 1])', field.validation(passportFields[index + 1]))
-     return field.validation(passportFields[index + 1]);
+    return requiredFields.every((requiredField) => {
+      let index = passportFields.indexOf(requiredField.name)
+     return requiredField.validation(passportFields[index + 1]);
     })
   })
 
-  console.log('validatedPassports', validatedPassports)
   return validatedPassports.length;
 }
 
 const answerPart2 = solvePart2(batch);
 console.log('answerPart2', answerPart2)
+
+
 function getBatch() {
   return (
 `eyr:2029 byr:1931 hcl:z cid:128
