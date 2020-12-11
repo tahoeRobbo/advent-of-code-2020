@@ -82,14 +82,13 @@ const solvePart2 = (passwordList) => {
     character = character[0];
     --pos1;
     --pos2;
-    console.log('pos1, pos2, character, password', pos1, pos2, character, password)
-    console.log('password[pos1] === character || password[pos2] === character', password[pos1] === character || password[pos2] === character)
 
     if (password[pos1] === character) {
       return password[pos2] !== character;
     } else if (password[pos2] === character) {
       return true;
     }
+
     return false;
   }).length
 }
