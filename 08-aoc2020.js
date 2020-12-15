@@ -46,29 +46,33 @@ Immediately before the program would run an instruction a second time, the value
 Run your copy of the boot code. Immediately before any instruction is executed a second time, what value is in the accumulator?
 */
 const mappedBoot = getBoot().map((instruction) => {
-  let [action, value] = instruction.split(' ')
+  let [action, signedValue] = instruction.split(' ')
 
   return {
     action,
-    value,
+    value: parseInt(signedValue, 10),
   }
 })
 
 const solvePart1 = () => {
+  return run(mappedBoot);
+}
+
+function run(instructions, mustComplete = false) {
   let total = 0;
   let pointers = new Set();
   let pointer = 0;
 
-  while(!pointers.has(pointer)) {
+  while(instructions[pointer] && !pointers.has(pointer) ) {
     pointers.add(pointer);
 
-    switch (mappedBoot[pointer].action) {
+    switch (instructions[pointer].action) {
       case 'acc':
-        total += mappedBoot[pointer].value;
+        total += instructions[pointer].value;
         ++pointer;
         break;
       case 'jmp':
-        pointer += mappedBoot[pointer].value;
+        pointer += instructions[pointer].value;
         break;
       case 'nop':
         ++pointer;
@@ -76,11 +80,74 @@ const solvePart1 = () => {
     }
   }
 
+  return mustComplete ? pointer === instructions.length && total : total
+}
+
+let answer = solvePart1(mappedBoot)
+console.log('Answer part 1: ', answer)
+
+/*
+* --- Part Two ---
+
+After some careful analysis, you believe that exactly one instruction is corrupted.
+
+Somewhere in the program, either a jmp is supposed to be a nop, or a nop is supposed to be a jmp. (No acc instructions were harmed in the corruption of this boot code.)
+
+The program is supposed to terminate by attempting to execute an instruction immediately after the last instruction in the file. By changing exactly one jmp or nop, you can repair the boot code and make it terminate correctly.
+
+For example, consider the same program from above:
+
+nop +0
+acc +1
+jmp +4
+acc +3
+jmp -3
+acc -99
+acc +1
+jmp -4
+acc +6
+
+If you change the first instruction from nop +0 to jmp +0, it would create a single-instruction infinite loop, never leaving that instruction. If you change almost any of the jmp instructions, the program will still eventually find another jmp instruction and loop forever.
+
+However, if you change the second-to-last instruction (from jmp -4 to nop -4), the program terminates! The instructions are visited in this order:
+
+nop +0  | 1
+acc +1  | 2
+jmp +4  | 3
+acc +3  |
+jmp -3  |
+acc -99 |
+acc +1  | 4
+nop -4  | 5
+acc +6  | 6
+
+After the last instruction (acc +6), the program terminates by attempting to run the instruction below the last instruction in the file. With this change, after the program terminates, the accumulator contains the value 8 (acc +1, acc +1, acc +6).
+
+Fix the program so that it terminates normally by changing exactly one jmp (to nop) or nop (to jmp). What is the value of the accumulator after the program terminates?
+*/
+
+const solvePart2 = (instructions) => {
+  let total;
+  let i = 0;
+
+  while (!total) {
+    if (instructions[i].action === 'jmp') {
+      instructions[i].action = 'nop';
+      total = run(instructions, true)
+      instructions[i].action = 'jmp'
+    } else if (instructions[i].action === 'nop') {
+      instructions[i].action = 'jmp';
+      total = run(instructions, true);
+      instructions[i].action = 'nop';
+    }
+    i++;
+  }
+
   return total
 }
 
-let answer = solvePart1()
-console.log('Answer part 1: ', answer)
+let answer2 = solvePart2(mappedBoot)
+console.log('answer2', answer2)
 
 function getBoot() {
   return (
